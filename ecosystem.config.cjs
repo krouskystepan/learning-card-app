@@ -12,7 +12,8 @@ module.exports = {
       max_memory_restart: '300M',
       env: {
         NODE_ENV: 'production'
-      }
+      },
+      env_file: '/var/www/envs/learning-cards.env'
     }
   ]
 }
