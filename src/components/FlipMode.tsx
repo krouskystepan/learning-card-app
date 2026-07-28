@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card";
 
 type Props = {
   card: Flashcard;
+  cardNumber: number;
   onPrev: () => void;
   onNext: () => void;
 };
 
-export function FlipMode({ card, onPrev, onNext }: Props) {
+export function FlipMode({ card, cardNumber, onPrev, onNext }: Props) {
   const [flipped, setFlipped] = useState(false);
 
   useEffect(() => {
@@ -45,9 +46,9 @@ export function FlipMode({ card, onPrev, onNext }: Props) {
             flipped ? "is-flipped" : ""
           }`}
         >
-          <Card className="section-card flip-face absolute inset-0 flex flex-col justify-between gap-0 p-8 shadow-lg ring-primary/25">
+          <Card className="section-card flip-face absolute inset-0 flex flex-col justify-between gap-0 p-8 shadow-lg ring-0">
             <Badge className="w-fit border-transparent bg-primary/15 text-primary">
-              Otázka
+              Otázka {cardNumber}
             </Badge>
             <p className="font-card text-2xl leading-snug font-medium sm:text-3xl">
               {card.question}
@@ -56,8 +57,10 @@ export function FlipMode({ card, onPrev, onNext }: Props) {
               Klikni nebo stiskni mezerník pro překlopení
             </span>
           </Card>
-          <Card className="section-card flip-face flip-face-back absolute inset-0 flex flex-col justify-between gap-0 bg-accent p-8 shadow-lg ring-primary/30">
-            <Badge className="w-fit">Odpověď</Badge>
+          <Card className="section-card-answer flip-face flip-face-back absolute inset-0 flex flex-col justify-between gap-0 p-8 shadow-lg ring-0">
+            <Badge className="w-fit border-transparent bg-primary text-primary-foreground">
+              Odpověď {cardNumber}
+            </Badge>
             <p className="font-card text-xl leading-relaxed font-medium sm:text-2xl">
               {card.answer}
             </p>

@@ -44,7 +44,7 @@ export function TopicActions({ sectionSlug, topicSlug, title }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="-mr-1 flex shrink-0 items-center">
       <Button asChild variant="ghost" size="icon-sm" aria-label="Upravit téma">
         <Link href={`/admin/topics/${sectionSlug}/${topicSlug}`}>
           <Pencil />

@@ -42,6 +42,11 @@ export function slugify(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** 1, 2, 10… then letters (Czech, numeric-aware). */
+export function compareByName(a: string, b: string): number {
+  return a.localeCompare(b, "cs", { numeric: true, sensitivity: "base" });
+}
+
 export function parseFlashcards(raw: unknown): Flashcard[] {
   if (!Array.isArray(raw)) {
     throw new Error("flashcards musí být pole");
@@ -75,24 +80,27 @@ export async function listSections(): Promise<Section[]> {
     allSections.map(async (section) => {
       const sectionTopics = await topicCol
         .find({ sectionId: section._id })
-        .sort({ title: 1 })
         .toArray();
+
+      const topics = sectionTopics
+        .map((t) => ({
+          slug: t.slug,
+          title: t.title,
+          cardCount: t.flashcards.length,
+        }))
+        .sort((a, b) => compareByName(a.title, b.title));
 
       return {
         slug: section.slug,
         name: section.name,
         icon: normalizeSectionIcon(section.icon),
         color: normalizeSectionColor(section.color),
-        topics: sectionTopics.map((t) => ({
-          slug: t.slug,
-          title: t.title,
-          cardCount: t.flashcards.length,
-        })),
+        topics,
       };
     }),
   );
 
-  return result;
+  return result.sort((a, b) => compareByName(a.name, b.name));
 }
 
 export async function getSectionBySlug(slug: string) {

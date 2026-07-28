@@ -41,7 +41,7 @@ export function SectionStylePicker({
                 aria-pressed={selected}
                 onClick={() => onIconChange(id)}
                 className={cn(
-                  "flex size-9 items-center justify-center rounded-lg border transition-colors",
+                  "flex size-9 cursor-pointer items-center justify-center rounded-lg border transition-colors",
                   selected
                     ? "border-foreground/30 bg-muted text-foreground"
                     : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted",
@@ -69,7 +69,7 @@ export function SectionStylePicker({
                 aria-pressed={selected}
                 onClick={() => onColorChange(id)}
                 className={cn(
-                  "size-8 rounded-full border-2 transition-transform",
+                  "size-8 cursor-pointer rounded-full border-2 transition-transform",
                   selected
                     ? "scale-110 border-foreground/40"
                     : "border-transparent hover:scale-105",

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, Plus, Trash2 } from 'lucide-react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Flashcard } from '@/lib/topics'
@@ -50,18 +50,7 @@ export function TopicEditor({
 }: Props) {
   const router = useRouter()
   const [editorMode, setEditorMode] = useState<Mode>('form')
-  const [jsonText, setJsonText] = useState(() =>
-    JSON.stringify(
-      {
-        title: initialTitle || 'Název tématu',
-        flashcards: initialFlashcards.length
-          ? initialFlashcards
-          : [{ question: 'Otázka?', answer: 'Odpověď.' }]
-      },
-      null,
-      2
-    )
-  )
+  const [jsonText, setJsonText] = useState('')
 
   const form = useForm<TopicFormValues>({
     resolver: zodResolver(topicFormSchema),
@@ -81,7 +70,7 @@ export function TopicEditor({
     formState: { isSubmitting, errors }
   } = form
 
-  const { fields, prepend, remove } = useFieldArray({
+  const { fields, prepend, remove, move } = useFieldArray({
     control,
     name: 'flashcards'
   })
@@ -322,7 +311,6 @@ export function TopicEditor({
 
               <div className="space-y-3">
                 {fields.map((field, index) => {
-                  const displayNumber = fields.length - index
                   return (
                     <div
                       key={field.id}
@@ -333,20 +321,42 @@ export function TopicEditor({
                           : 'border-border bg-card'
                       )}
                     >
-                      <div className="mb-3 flex items-center justify-between">
+                      <div className="mb-3 flex items-center justify-between gap-2">
                         <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                          Kartička {displayNumber}
+                          Kartička {index + 1}
                         </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => remove(index)}
-                          disabled={fields.length <= 1}
-                          aria-label="Odstranit kartičku"
-                        >
-                          <Trash2 />
-                        </Button>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => move(index, index - 1)}
+                            disabled={index === 0}
+                            aria-label="Posunout nahoru"
+                          >
+                            <ArrowUp />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => move(index, index + 1)}
+                            disabled={index === fields.length - 1}
+                            aria-label="Posunout dolů"
+                          >
+                            <ArrowDown />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => remove(index)}
+                            disabled={fields.length <= 1}
+                            aria-label="Odstranit kartičku"
+                          >
+                            <Trash2 />
+                          </Button>
+                        </div>
                       </div>
                       <div className="grid gap-3">
                         <div className="space-y-1.5">
@@ -407,7 +417,13 @@ export function TopicEditor({
                   id="json"
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
-                  className="field-sizing-fixed max-h-[60vh] min-h-90 overflow-y-auto font-mono text-sm"
+                  className={cn(
+                    'field-sizing-fixed max-h-[60vh] min-h-90 overflow-y-auto font-mono text-sm',
+                    'border-primary/30 bg-primary/8 text-foreground',
+                    'placeholder:text-muted-foreground/80',
+                    'focus-visible:border-primary focus-visible:ring-primary/25',
+                    'dark:border-primary/35 dark:bg-primary/12',
+                  )}
                   placeholder={JSON_TEMPLATE_EXAMPLE}
                   spellCheck={false}
                 />

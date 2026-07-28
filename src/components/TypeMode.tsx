@@ -10,11 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 type Props = {
   card: Flashcard;
+  cardNumber: number;
   onPrev: () => void;
   onNext: () => void;
 };
 
-export function TypeMode({ card, onPrev, onNext }: Props) {
+export function TypeMode({ card, cardNumber, onPrev, onNext }: Props) {
   const [draft, setDraft] = useState("");
   const [revealed, setRevealed] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -23,9 +24,9 @@ export function TypeMode({ card, onPrev, onNext }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card className="section-card gap-0 p-8 shadow-lg ring-primary/25">
+      <Card className="section-card gap-0 p-8 shadow-lg ring-0">
         <Badge className="w-fit border-transparent bg-primary/15 text-primary">
-          Otázka
+          Otázka {cardNumber}
         </Badge>
         <p className="mt-4 font-card text-2xl leading-snug font-medium sm:text-3xl">
           {card.question}
@@ -58,8 +59,10 @@ export function TypeMode({ card, onPrev, onNext }: Props) {
           </Button>
         ) : (
           <div className="mt-6 space-y-4">
-            <div className="rounded-xl border border-primary/25 bg-accent p-5">
-              <Badge className="mb-2">Správná odpověď</Badge>
+            <div className="section-card-answer rounded-xl border p-5">
+              <Badge className="mb-2 border-transparent bg-primary text-primary-foreground">
+                Správná odpověď {cardNumber}
+              </Badge>
               <p className="font-card text-lg leading-relaxed">{card.answer}</p>
             </div>
             {draft.trim() && (

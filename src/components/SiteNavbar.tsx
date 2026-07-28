@@ -14,7 +14,7 @@ type Props = {
 export function SiteNavbar({ username, role }: Props) {
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-3 px-6">
+      <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link
           href="/"
           className="font-card text-lg font-semibold tracking-tight text-foreground hover:opacity-80"

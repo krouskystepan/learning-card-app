@@ -126,6 +126,19 @@ export function StudySession({ title, flashcards, color }: Props) {
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
+          {orderMode === "random" && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => applyOrderMode("random")}
+              title="Znovu zamíchat"
+            >
+              <Shuffle data-icon="inline-start" />
+              Zamíchat znovu
+            </Button>
+          )}
+
           <ToggleGroup
             type="single"
             value={orderMode}
@@ -152,19 +165,6 @@ export function StudySession({ title, flashcards, color }: Props) {
               Náhodně
             </ToggleGroupItem>
           </ToggleGroup>
-
-          {orderMode === "random" && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => applyOrderMode("random")}
-              title="Znovu zamíchat"
-            >
-              <Shuffle data-icon="inline-start" />
-              Zamíchat znovu
-            </Button>
-          )}
         </div>
       </div>
 
@@ -175,6 +175,7 @@ export function StudySession({ title, flashcards, color }: Props) {
           <FlipMode
             key={`${mode}-${order.join("-")}-${index}`}
             card={current}
+            cardNumber={order[index] + 1}
             onPrev={goPrev}
             onNext={goNext}
           />
@@ -182,6 +183,7 @@ export function StudySession({ title, flashcards, color }: Props) {
           <TypeMode
             key={`${mode}-${order.join("-")}-${index}`}
             card={current}
+            cardNumber={order[index] + 1}
             onPrev={goPrev}
             onNext={goNext}
           />

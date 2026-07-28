@@ -240,6 +240,33 @@
   );
 }
 
+/* Answer = stronger filled surface (question uses .section-card) */
+.section-card-answer {
+  border-color: color-mix(
+    in oklch,
+    oklch(0.55 0.14 var(--section-hue)) 40%,
+    transparent
+  );
+  background: color-mix(
+    in oklch,
+    oklch(0.92 0.08 var(--section-hue)) 88%,
+    white
+  );
+}
+
+.dark .section-card-answer {
+  border-color: color-mix(
+    in oklch,
+    oklch(0.75 0.12 var(--section-hue)) 28%,
+    oklch(1 0 0 / 8%)
+  );
+  background: color-mix(
+    in oklch,
+    oklch(0.48 0.12 var(--section-hue)) 42%,
+    oklch(0.2 0.03 var(--section-hue))
+  );
+}
+
 /* Topic tiles on the home page — flat, not nested cards */
 .section-topic {
   background: color-mix(in oklch, white 55%, transparent);
@@ -255,14 +282,6 @@
   );
   box-shadow: inset 0 0 0 1px
     color-mix(in oklch, oklch(0.75 0.1 var(--section-hue)) 16%, oklch(1 0 0 / 5%));
-}
-
-.dark .section-topic:hover {
-  background: color-mix(
-    in oklch,
-    oklch(0.55 0.09 var(--section-hue)) 14%,
-    oklch(0.19 0.014 350)
-  );
 }
 
 @layer base {

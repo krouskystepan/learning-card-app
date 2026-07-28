@@ -31,20 +31,18 @@ export type TopicPayload = z.infer<typeof topicPayloadSchema>;
 
 export const EMPTY_CARD = { question: "", answer: "" };
 
-/** Newest-first for the editor UI. */
+/** Same order as study (first = first). */
 export function toEditorCards(
   cards: { question: string; answer: string }[],
 ) {
-  const source = cards.length ? cards : [EMPTY_CARD];
-  return [...source].reverse();
+  return cards.length ? [...cards] : [EMPTY_CARD];
 }
 
-/** Oldest-first for the API / study order. */
+/** Persist non-empty cards in editor order (= study order). */
 export function toPersistCards(
   cards: { question: string; answer: string }[],
 ) {
-  return [...cards]
-    .reverse()
+  return cards
     .filter((c) => c.question.trim() && c.answer.trim())
     .map((c) => ({
       question: c.question.trim(),
