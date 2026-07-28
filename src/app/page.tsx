@@ -1,65 +1,145 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { BookOpen } from 'lucide-react'
+import { listSections } from '@/lib/topics'
+import { getSession } from '@/lib/auth'
+import { sectionColorVars } from '@/lib/section-style'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { SectionActions } from '@/components/SectionAdmin'
+import { NewTopicButton, TopicActions } from '@/components/TopicAdmin'
+import { SectionBadge } from '@/components/SectionBadge'
 
-export default function Home() {
+function cardLabel(count: number) {
+  if (count === 1) return 'kartička'
+  if (count < 5) return 'kartičky'
+  return 'kartiček'
+}
+
+export default async function Home() {
+  const [sections, session] = await Promise.all([listSections(), getSession()])
+  const isEditor = !!session
+  const visibleSections = isEditor
+    ? sections
+    : sections.filter((s) => s.topics.length > 0)
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="flex flex-1 flex-col">
+      <header className="mx-auto w-full max-w-5xl px-6 pt-10 pb-8">
+        <h1 className="font-card text-4xl font-semibold tracking-tight sm:text-5xl">
+          Vyber si okruh
+        </h1>
+        <p className="mt-3 max-w-xl text-lg text-muted-foreground">
+          {isEditor
+            ? 'Jsi přihlášený - můžeš vytvářet, upravovat a mazat sekce i témata.'
+            : 'Vyber téma a začni se učit.'}
+        </p>
+      </header>
+
+      <main className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-6 pb-24">
+        {visibleSections.map((section) => (
+          <section
+            key={section.slug}
+            className="section-surface section-theme space-y-4 rounded-2xl border p-4 sm:p-5"
+            style={sectionColorVars(section.color)}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <SectionBadge icon={section.icon} color={section.color} />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-card text-2xl font-semibold tracking-tight">
+                    {section.name}
+                  </h2>
+                  {isEditor && (
+                    <SectionActions
+                      slug={section.slug}
+                      name={section.name}
+                      icon={section.icon}
+                      color={section.color}
+                    />
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {section.topics.length}{' '}
+                  {section.topics.length === 1
+                    ? 'téma'
+                    : section.topics.length < 5
+                      ? 'témata'
+                      : 'témat'}
+                </p>
+              </div>
+              {isEditor && (
+                <div className="ml-auto">
+                  <NewTopicButton sectionSlug={section.slug} />
+                </div>
+              )}
+            </div>
+
+            {section.topics.length === 0 ? (
+              isEditor ? (
+                <p className="pl-12 text-sm text-muted-foreground">
+                  Zatím žádná témata - vytvoř první.
+                </p>
+              ) : null
+            ) : (
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
+                {section.topics.map((topic) => (
+                  <article
+                    key={`${section.slug}-${topic.slug}`}
+                    className="section-topic flex flex-col gap-3 rounded-xl px-3.5 py-3 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-card text-base leading-snug font-semibold tracking-tight sm:text-lg">
+                        <Link
+                          href={`/study/${section.slug}/${topic.slug}`}
+                          className="hover:text-primary"
+                        >
+                          {topic.title}
+                        </Link>
+                      </h3>
+                      {isEditor && (
+                        <TopicActions
+                          sectionSlug={section.slug}
+                          topicSlug={topic.slug}
+                          title={topic.title}
+                        />
+                      )}
+                    </div>
+                    <div className="mt-auto flex items-center justify-between gap-3">
+                      <Button asChild size="sm">
+                        <Link href={`/study/${section.slug}/${topic.slug}`}>
+                          <BookOpen data-icon="inline-start" />
+                          Učit se
+                        </Link>
+                      </Button>
+                      <p className="text-sm text-muted-foreground">
+                        {topic.cardCount} {cardLabel(topic.cardCount)}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        ))}
+
+        {visibleSections.length === 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Žádné sekce</CardTitle>
+              <CardDescription>
+                {isEditor
+                  ? 'Vytvoř první sekci tlačítkem „Nová sekce“.'
+                  : 'Zatím tu nic není. Přihlas se a přidej obsah.'}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
       </main>
     </div>
-  );
+  )
 }
