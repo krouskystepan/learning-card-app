@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, KeyRound, Shield, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
@@ -26,22 +26,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import type { AdminUser } from "@/lib/users";
 
-type AdminUser = {
-  id: string;
-  username: string;
-  role: "owner" | "admin";
+type Props = {
+  initialAdmins: AdminUser[];
 };
 
-export function AdminUsersPanel() {
-  const [admins, setAdmins] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
+export function AdminUsersPanel({ initialAdmins }: Props) {
+  const [admins, setAdmins] = useState(initialAdmins);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [creating, setCreating] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  async function refreshAdmins() {
     try {
       const res = await fetch("/api/admins");
       const data = (await res.json()) as {
@@ -55,14 +52,8 @@ export function AdminUsersPanel() {
       setAdmins(data.admins ?? []);
     } catch {
       toast.error("Síťová chyba");
-    } finally {
-      setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  }
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -73,7 +64,10 @@ export function AdminUsersPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-      const data = (await res.json()) as { error?: string };
+      const data = (await res.json()) as {
+        admin?: AdminUser;
+        error?: string;
+      };
       if (!res.ok) {
         toast.error(data.error || "Vytvoření selhalo");
         return;
@@ -81,7 +75,15 @@ export function AdminUsersPanel() {
       toast.success(`Admin „${username.trim()}“ vytvořen`);
       setUsername("");
       setPassword("");
-      await load();
+      if (data.admin) {
+        setAdmins((prev) =>
+          [...prev, data.admin!].sort((a, b) =>
+            a.username.localeCompare(b.username, "cs"),
+          ),
+        );
+      } else {
+        await refreshAdmins();
+      }
     } catch {
       toast.error("Síťová chyba");
     } finally {
@@ -118,7 +120,7 @@ export function AdminUsersPanel() {
         return;
       }
       toast.success(`Admin „${name}“ smazán`);
-      await load();
+      setAdmins((prev) => prev.filter((a) => a.id !== id));
     } catch {
       toast.error("Síťová chyba");
     }
@@ -190,17 +192,16 @@ export function AdminUsersPanel() {
           <CardHeader>
             <CardTitle className="text-lg">Existující admini</CardTitle>
             <CardDescription>
-              {loading
-                ? "Načítám…"
-                : `${admins.length} ${admins.length === 1 ? "účet" : admins.length < 5 ? "účty" : "účtů"}`}
+              {admins.length}{" "}
+              {admins.length === 1
+                ? "účet"
+                : admins.length < 5
+                  ? "účty"
+                  : "účtů"}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            {loading ? (
-              <p className="px-6 pb-6 text-sm text-muted-foreground">
-                Načítám seznam…
-              </p>
-            ) : admins.length === 0 ? (
+            {admins.length === 0 ? (
               <p className="px-6 pb-6 text-sm text-muted-foreground">
                 Zatím žádní další admini.
               </p>

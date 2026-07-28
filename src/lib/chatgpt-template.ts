@@ -1,40 +1,34 @@
 /** Prompt + JSON shape for non-technical users (ChatGPT → paste into JSON tab). */
 
-export const JSON_TEMPLATE_EXAMPLE = `{
-  "title": "Trh a tržní ekonomika",
-  "flashcards": [
-    {
-      "question": "Co je trh?",
-      "answer": "Trh je místo, kde se střetává nabídka s poptávkou a vzniká cena."
-    },
-    {
-      "question": "Jaké jsou subjekty trhu?",
-      "answer": "Jednotlivci, podniky a stát."
-    }
-  ]
-}`
+export const CHATGPT_PROMPT = `ÚKOL: Přečti CELÝ zdrojový text (včetně přílohy / nahraného souboru) a vytvoř z něj sadu studijních kartiček.
 
-export const CHATGPT_PROMPT = `Vytvoř mi sadu studijních kartiček (otázka + odpověď) z textu níže.
+DŮLEŽITÉ - co NEMÁŠ dělat:
+- NEVRACEJ prázdnou šablonu ani placeholdery typu "Název tématu", "Otázka?", "Odpověď."
+- NEKOPÍRUJ formát níže 1:1 s tečkami - vyplň ho reálným obsahem ze zdroje.
+- NEIGNORUJ text v příloze / souboru. Pokud je text nahraný jako soubor, otevři ho a zpracuj celý obsah.
 
-PRAVIDLA:
-- Odpověz POUZE platným JSON objektem, bez úvodu, bez markdownu, bez \`\`\`json.
+CO MÁŠ udělat:
+1. Přečti celý zdroj (text níže NEBO obsah přiloženého souboru).
+2. Vymysli výstižný "title" podle tématu textu.
+3. Vytvoř co nejvíce užitečných kartiček: pokryj všechny důležité pojmy, definice, vztahy a fakta.
+4. Odpověz POUZE jedním platným JSON objektem - bez úvodu, bez markdownu, bez \`\`\`json.
+
+PRAVIDLA JSON:
 - Používej POUZE rovné ASCII uvozovky " (ne „ “ ani ‚ ‘).
 - Jazyk otázek i odpovědí: čeština.
-- Každá kartička má krátkou otázku a stručnou, přesnou odpověď (1–3 věty).
-- Pokryj všechny důležité pojmy, definice a fakta z textu.
-- Nepřidávej pole "slug" - URL si aplikace vytvoří sama z názvu.
+- Každá kartička: krátká otázka + stručná, přesná odpověď (1-3 věty).
+- Pole: pouze "title" a "flashcards" (každá kartička má "question" a "answer").
+- Nepřidávej "slug".
 
-PŘESNÁ STRUKTURA (dodrž ji 1:1):
+FORMÁT (vyplň REÁLNÝM obsahem ze zdroje):
 {
-  "title": "Název tématu",
+  "title": "...",
   "flashcards": [
-    { "question": "Otázka?", "answer": "Odpověď." }
+    { "question": "...", "answer": "..." }
   ]
 }
 
-PŘÍKLAD:
-${JSON_TEMPLATE_EXAMPLE}
-
---- TEXT KE ZPRACOVÁNÍ (sem vlož svůj výpis / poznámky) ---
+--- ZDROJOVÝ TEXT ---
+(Pokud jsi nahrál/a soubor, zpracuj ten. Jinak vlož text sem pod tento řádek.)
 
 `

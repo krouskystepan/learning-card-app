@@ -13,7 +13,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { ChatGptTemplate } from '@/components/ChatGptTemplate'
-import { JSON_TEMPLATE_EXAMPLE } from '@/lib/chatgpt-template'
 import { cn } from '@/lib/utils'
 import { parseJsonObject } from '@/lib/parse-json'
 import {
@@ -113,10 +112,23 @@ export function TopicEditor({
     }
   }
 
+  function hasFormContent() {
+    const values = getValues()
+    return (
+      values.title.trim().length > 0 ||
+      toPersistCards(values.flashcards).length > 0
+    )
+  }
+
   function switchMode(next: Mode) {
     if (next === editorMode) return
     if (next === 'json') {
-      syncFormToJson()
+      // Keep empty for paste when creating with an empty form
+      if (mode === 'edit' || hasFormContent()) {
+        syncFormToJson()
+      } else {
+        setJsonText('')
+      }
       setEditorMode('json')
       return
     }
@@ -424,7 +436,7 @@ export function TopicEditor({
                     'focus-visible:border-primary focus-visible:ring-primary/25',
                     'dark:border-primary/35 dark:bg-primary/12',
                   )}
-                  placeholder={JSON_TEMPLATE_EXAMPLE}
+                  placeholder='Vlož JSON od ChatGPT…'
                   spellCheck={false}
                 />
               </div>
