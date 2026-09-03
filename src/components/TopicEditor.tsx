@@ -92,7 +92,7 @@ export function TopicEditor({
         control={control}
         render={({ field }) => (
           <Select
-            value={field.value}
+            value={field.value ?? ''}
             onValueChange={field.onChange}
             disabled={disabled}
           >

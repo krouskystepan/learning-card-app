@@ -402,7 +402,7 @@ function SectionEditorsDialog({ slug, name }: { slug: string; name: string }) {
                   <div className="min-w-0 flex-1 space-y-2">
                     <Label htmlFor={`editor-${slug}`}>Přidat uživatele</Label>
                     <Select
-                      value={picked || undefined}
+                      value={picked}
                       onValueChange={setPicked}
                     >
                       <SelectTrigger id={`editor-${slug}`} className="w-full">
