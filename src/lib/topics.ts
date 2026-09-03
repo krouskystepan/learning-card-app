@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { sections, topics, users } from '@/lib/db'
+import { isMainAdminUsername } from '@/lib/users'
 import {
   DEFAULT_SECTION_COLOR,
   DEFAULT_SECTION_ICON,
@@ -343,7 +344,9 @@ export async function updateSectionEditors(slug: string, raw: unknown) {
   ]
 
   const owner = await ownerUsername(section.createdBy)
-  const withoutOwner = requested.filter((name) => name !== owner)
+  const withoutOwner = requested.filter(
+    (name) => name !== owner && !isMainAdminUsername(name)
+  )
 
   if (withoutOwner.length === 0) {
     await col.updateOne(

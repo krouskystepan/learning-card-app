@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { Select as SelectPrimitive } from "radix-ui"
+import * as React from 'react'
+import { Select as SelectPrimitive } from 'radix-ui'
 
-import { cn } from "@/lib/utils"
-import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
+import { cn } from '@/lib/utils'
+import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from 'lucide-react'
 
 function Select({
   value,
@@ -15,7 +15,7 @@ function Select({
   return (
     <SelectPrimitive.Root
       data-slot="select"
-      value={controlled ? (value ?? "") : value}
+      value={controlled ? (value ?? '') : value}
       onValueChange={onValueChange}
       {...props}
     />
@@ -29,7 +29,7 @@ function SelectGroup({
   return (
     <SelectPrimitive.Group
       data-slot="select-group"
-      className={cn("p-1", className)}
+      className={cn('p-1', className)}
       {...props}
     />
   )
@@ -43,11 +43,11 @@ function SelectValue({
 
 function SelectTrigger({
   className,
-  size = "default",
+  size = 'default',
   children,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
-  size?: "sm" | "default"
+  size?: 'sm' | 'default'
 }) {
   return (
     <SelectPrimitive.Trigger
@@ -70,8 +70,8 @@ function SelectTrigger({
 function SelectContent({
   className,
   children,
-  position = "popper",
-  align = "center",
+  position = 'popper',
+  align = 'center',
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (
@@ -79,9 +79,9 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          "relative z-[100] max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-popover text-popover-foreground shadow-md duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-          position === "popper" &&
-            "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+          'relative z-100 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-popover text-popover-foreground shadow-md duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
+          position === 'popper' &&
+            'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
           className
         )}
         position={position}
@@ -91,9 +91,9 @@ function SelectContent({
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
           className={cn(
-            "p-1",
-            position === "popper" &&
-              "h-(--radix-select-trigger-height) w-full min-w-(--radix-select-trigger-width)"
+            'p-1',
+            position === 'popper' &&
+              'h-(--radix-select-trigger-height) w-full min-w-(--radix-select-trigger-width)'
           )}
         >
           {children}
@@ -111,7 +111,7 @@ function SelectLabel({
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn("px-1.5 py-1 text-xs text-muted-foreground", className)}
+      className={cn('px-1.5 py-1 text-xs text-muted-foreground', className)}
       {...props}
     />
   )
@@ -148,7 +148,7 @@ function SelectSeparator({
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn("pointer-events-none -mx-1 my-1 h-px bg-border", className)}
+      className={cn('pointer-events-none -mx-1 my-1 h-px bg-border', className)}
       {...props}
     />
   )
@@ -200,5 +200,5 @@ export {
   SelectScrollUpButton,
   SelectSeparator,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 }

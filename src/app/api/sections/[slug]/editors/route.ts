@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { AuthError, requireEditorsAccess, requireSession } from "@/lib/auth";
 import { getSectionBySlug, ownerUsername, sectionEditors, updateSectionEditors } from "@/lib/topics";
-import { listUsernames } from "@/lib/users";
+import { listUsernames, isMainAdminUsername } from "@/lib/users";
 
 type Ctx = { params: Promise<{ slug: string }> };
 
@@ -17,9 +17,11 @@ export async function GET(_request: Request, { params }: Ctx) {
     requireEditorsAccess(session, createdBy);
     const usernames = await listUsernames();
     return NextResponse.json({
-      editors: sectionEditors(section),
+      editors: sectionEditors(section).filter((name) => !isMainAdminUsername(name)),
       createdBy,
-      users: usernames.filter((name) => name !== createdBy),
+      users: usernames.filter(
+        (name) => name !== createdBy && !isMainAdminUsername(name),
+      ),
     });
   } catch (err) {
     if (err instanceof AuthError) {
