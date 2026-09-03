@@ -144,7 +144,11 @@ export function HomeBrowse({ sections, isEditor, viewer }: Props) {
                       : 'témat'}
                 </p>
               </div>
-              {isEditor && (
+              {canManageContent(
+                viewer,
+                section.createdBy,
+                section.editors
+              ) && (
                 <div className="ml-auto">
                   <NewTopicButton sectionSlug={section.slug} />
                 </div>
@@ -152,7 +156,11 @@ export function HomeBrowse({ sections, isEditor, viewer }: Props) {
             </div>
 
             {section.topics.length === 0 ? (
-              isEditor ? (
+              canManageContent(
+                viewer,
+                section.createdBy,
+                section.editors
+              ) ? (
                 <p className="pl-12 text-sm text-muted-foreground">
                   Zatím žádná témata - vytvoř první.
                 </p>

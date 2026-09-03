@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
-import { AuthError, requireSession } from "@/lib/auth";
-import { createTopic, parseFlashcards } from "@/lib/topics";
+import { AuthError, requireContentAccess, requireSession } from "@/lib/auth";
+import {
+  createTopic,
+  getSectionBySlug,
+  ownerUsername,
+  parseFlashcards,
+  sectionEditors,
+} from "@/lib/topics";
 
 export async function POST(request: Request) {
   try {
@@ -17,6 +23,16 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    const section = await getSectionBySlug(body.sectionSlug);
+    if (!section) {
+      return NextResponse.json({ error: "Sekce nenalezena" }, { status: 404 });
+    }
+    requireContentAccess(
+      session,
+      await ownerUsername(section.createdBy),
+      sectionEditors(section),
+    );
 
     const flashcards = parseFlashcards(body.flashcards ?? []);
     const topic = await createTopic({
