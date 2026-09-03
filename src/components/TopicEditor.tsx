@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowDown, ArrowUp, ChevronDown, Plus, Trash2 } from 'lucide-react'
-import { useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react'
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Flashcard } from '@/lib/topics'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { ChatGptTemplate } from '@/components/ChatGptTemplate'
 import { cn } from '@/lib/utils'
 import { parseJsonObject } from '@/lib/parse-json'
@@ -35,9 +42,6 @@ type Props = {
   initialFlashcards?: Flashcard[]
   sections: { slug: string; name: string }[]
 }
-
-const selectClass =
-  'h-8 w-full appearance-none rounded-lg border border-input bg-transparent py-1 pr-8 pl-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30'
 
 export function TopicEditor({
   mode,
@@ -80,6 +84,33 @@ export function TopicEditor({
   ).length
 
   const heading = mode === 'create' ? 'Nové téma' : 'Upravit téma'
+
+  function sectionSelect(id: string, disabled = false) {
+    return (
+      <Controller
+        name="sectionSlug"
+        control={control}
+        render={({ field }) => (
+          <Select
+            value={field.value}
+            onValueChange={field.onChange}
+            disabled={disabled}
+          >
+            <SelectTrigger id={id} className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent position="popper" align="start">
+              {sections.map((s) => (
+                <SelectItem key={s.slug} value={s.slug}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      />
+    )
+  }
 
   function syncFormToJson() {
     const values = getValues()
@@ -255,24 +286,7 @@ export function TopicEditor({
             <section className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="section">Sekce</Label>
-                <div className="relative">
-                  <select
-                    id="section"
-                    className={selectClass}
-                    disabled={mode === 'edit'}
-                    {...register('sectionSlug')}
-                  >
-                    {sections.map((s) => (
-                      <option key={s.slug} value={s.slug}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    aria-hidden
-                    className="pointer-events-none absolute top-1/2 right-2 size-4 -translate-y-1/2 text-muted-foreground"
-                  />
-                </div>
+                {sectionSelect('section', mode === 'edit')}
                 {errors.sectionSlug && (
                   <p className="text-sm text-destructive">
                     {errors.sectionSlug.message}
@@ -404,23 +418,7 @@ export function TopicEditor({
               {mode === 'create' && (
                 <div className="space-y-2">
                   <Label htmlFor="json-section">Sekce</Label>
-                  <div className="relative">
-                    <select
-                      id="json-section"
-                      className={selectClass}
-                      {...register('sectionSlug')}
-                    >
-                      {sections.map((s) => (
-                        <option key={s.slug} value={s.slug}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      aria-hidden
-                      className="pointer-events-none absolute top-1/2 right-2 size-4 -translate-y-1/2 text-muted-foreground"
-                    />
-                  </div>
+                  {sectionSelect('json-section')}
                 </div>
               )}
               <div className="space-y-2">

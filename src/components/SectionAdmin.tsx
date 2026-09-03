@@ -408,7 +408,7 @@ function SectionEditorsDialog({ slug, name }: { slug: string; name: string }) {
                       <SelectTrigger id={`editor-${slug}`} className="w-full">
                         <SelectValue placeholder="Vyber uživatele" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper" align="start">
                         {available.map((username) => (
                           <SelectItem key={username} value={username}>
                             {username}
