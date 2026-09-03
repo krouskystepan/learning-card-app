@@ -21,9 +21,15 @@ type Props = {
   sectionSlug: string;
   topicSlug: string;
   title: string;
+  canDelete: boolean;
 };
 
-export function TopicActions({ sectionSlug, topicSlug, title }: Props) {
+export function TopicActions({
+  sectionSlug,
+  topicSlug,
+  title,
+  canDelete,
+}: Props) {
   const router = useRouter();
 
   async function remove() {
@@ -50,32 +56,35 @@ export function TopicActions({ sectionSlug, topicSlug, title }: Props) {
           <Pencil />
         </Link>
       </Button>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Smazat téma"
-          >
-            <Trash2 className="text-destructive" />
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Smazat téma „{title}“?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Smažou se všechny kartičky v tomto tématu. Tuto akci nelze vrátit.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Zrušit</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={remove}>
-              Smazat
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {canDelete && (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Smazat téma"
+            >
+              <Trash2 className="text-destructive" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Smazat téma „{title}“?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Smažou se všechny kartičky v tomto tématu. Tuto akci nelze
+                vrátit.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Zrušit</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={remove}>
+                Smazat
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

@@ -17,6 +17,9 @@ export type SectionDoc = {
   slug: string;
   icon?: string;
   color?: string;
+  createdBy?: string | ObjectId;
+  /** Usernames allowed to edit/delete this section (and its topics). */
+  editors?: Array<string | ObjectId>;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -28,6 +31,7 @@ export type TopicDoc = {
   slug: string;
   title: string;
   flashcards: Flashcard[];
+  createdBy?: string | ObjectId;
   createdAt: Date;
   updatedAt: Date;
 };

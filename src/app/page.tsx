@@ -9,5 +9,11 @@ export default async function Home() {
     ? sections
     : sections.filter((s) => s.topics.length > 0)
 
-  return <HomeBrowse sections={visibleSections} isEditor={isEditor} />
+  return (
+    <HomeBrowse
+      sections={visibleSections}
+      isEditor={isEditor}
+      viewer={session}
+    />
+  )
 }

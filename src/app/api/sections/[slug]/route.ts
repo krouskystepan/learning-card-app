@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { AuthError, requireSession } from "@/lib/auth";
+import { AuthError, requireContentAccess, requireDeleteAccess, requireSession } from "@/lib/auth";
 import {
   deleteSection,
   getSectionBySlug,
+  ownerUsername,
+  sectionEditors,
   updateSection,
 } from "@/lib/topics";
 import {
@@ -33,8 +35,17 @@ export async function GET(_request: Request, { params }: Ctx) {
 
 export async function PATCH(request: Request, { params }: Ctx) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const { slug } = await params;
+    const section = await getSectionBySlug(slug);
+    if (!section) {
+      return NextResponse.json({ error: "Sekce nenalezena" }, { status: 404 });
+    }
+    requireContentAccess(
+      session,
+      await ownerUsername(section.createdBy),
+      sectionEditors(section),
+    );
     const body = (await request.json()) as {
       name?: string;
       icon?: string;
@@ -48,7 +59,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
     return NextResponse.json(updated);
   } catch (err) {
     if (err instanceof AuthError) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: err.message }, { status: err.status });
     }
     const message = err instanceof Error ? err.message : "Chyba serveru";
     const status = message.includes("nenalezena") ? 404 : 400;
@@ -58,13 +69,18 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
 export async function DELETE(_request: Request, { params }: Ctx) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const { slug } = await params;
+    const section = await getSectionBySlug(slug);
+    if (!section) {
+      return NextResponse.json({ error: "Sekce nenalezena" }, { status: 404 });
+    }
+    requireDeleteAccess(session, await ownerUsername(section.createdBy));
     await deleteSection(slug);
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof AuthError) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: err.message }, { status: err.status });
     }
     const message = err instanceof Error ? err.message : "Chyba serveru";
     const status = message.includes("nenalezena") ? 404 : 400;

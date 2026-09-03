@@ -140,7 +140,8 @@ export function AdminUsersPanel({ initialAdmins }: Props) {
           Správa adminů
         </h1>
         <p className="mt-2 max-w-xl text-muted-foreground">
-          Noví admini mohou upravovat obsah, ale nemohou přidávat další adminy.
+          Noví admini mohou vytvářet obsah a upravovat nebo mazat jen to, co sami
+          vytvořili. Hlavní admin může spravovat vše.
         </p>
       </header>
 

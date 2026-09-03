@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
-import { AuthError, requireSession } from "@/lib/auth";
+import { AuthError, requireContentAccess, requireDeleteAccess, requireSession } from "@/lib/auth";
+import { sectionCollaborators } from "@/lib/permissions";
 import {
   deleteTopic,
+  getSectionBySlug,
   getTopicDoc,
+  ownerUsername,
   parseFlashcards,
+  sectionEditors,
   updateTopic,
 } from "@/lib/topics";
 
@@ -32,8 +36,21 @@ export async function GET(_request: Request, { params }: Ctx) {
 
 export async function PATCH(request: Request, { params }: Ctx) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const { section, topic } = await params;
+    const doc = await getTopicDoc(section, topic);
+    if (!doc) {
+      return NextResponse.json({ error: "Téma nenalezeno" }, { status: 404 });
+    }
+    const parent = await getSectionBySlug(section);
+    requireContentAccess(
+      session,
+      await ownerUsername(doc.createdBy),
+      sectionCollaborators({
+        createdBy: await ownerUsername(parent?.createdBy),
+        editors: sectionEditors(parent),
+      }),
+    );
     const body = (await request.json()) as {
       title?: string;
       flashcards?: unknown;
@@ -49,7 +66,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
     return NextResponse.json(updated);
   } catch (err) {
     if (err instanceof AuthError) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: err.message }, { status: err.status });
     }
     const message = err instanceof Error ? err.message : "Chyba serveru";
     const status = message.includes("nenalezeno") ? 404 : 400;
@@ -59,13 +76,23 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
 export async function DELETE(_request: Request, { params }: Ctx) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const { section, topic } = await params;
+    const doc = await getTopicDoc(section, topic);
+    if (!doc) {
+      return NextResponse.json({ error: "Téma nenalezeno" }, { status: 404 });
+    }
+    const parent = await getSectionBySlug(section);
+    requireDeleteAccess(
+      session,
+      await ownerUsername(doc.createdBy),
+      await ownerUsername(parent?.createdBy),
+    );
     await deleteTopic(section, topic);
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof AuthError) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: err.message }, { status: err.status });
     }
     const message = err instanceof Error ? err.message : "Chyba serveru";
     const status = message.includes("nenalezeno") ? 404 : 400;

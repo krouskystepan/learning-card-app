@@ -14,7 +14,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const body = (await request.json()) as {
       name?: string;
       icon?: string;
@@ -24,11 +24,12 @@ export async function POST(request: Request) {
       name: body.name ?? "",
       icon: body.icon,
       color: body.color,
+      createdBy: session.username,
     });
     return NextResponse.json(section, { status: 201 });
   } catch (err) {
     if (err instanceof AuthError) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: err.message }, { status: err.status });
     }
     const message = err instanceof Error ? err.message : "Chyba serveru";
     return NextResponse.json({ error: message }, { status: 400 });

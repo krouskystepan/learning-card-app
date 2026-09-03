@@ -34,7 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return {
           id: user._id.toString(),
           name: user.username,
-          role: normalizeRole(user.role),
+          role: normalizeRole(user.role, user.username),
         };
       },
     }),
@@ -63,12 +63,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         if (user.name) token.username = user.name;
-        const role =
-          "role" in user && (user.role === "owner" || user.role === "admin")
-            ? user.role
-            : "admin";
-        token.role = role;
+        if (user.role === "owner" || user.role === "admin") {
+          token.role = user.role;
+        }
       }
+      const username =
+        typeof token.username === "string" ? token.username : undefined;
+      token.role = normalizeRole(token.role, username);
       return token;
     },
     session({ session, token }) {
@@ -76,7 +77,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (typeof token.username === "string") {
           session.user.name = token.username;
         }
-        session.user.role = token.role === "owner" ? "owner" : "admin";
+        session.user.role = normalizeRole(token.role, session.user.name);
       }
       return session;
     },

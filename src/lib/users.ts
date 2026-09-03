@@ -4,6 +4,14 @@ import { users, type UserDoc } from "@/lib/db";
 
 export type UserRole = "owner" | "admin";
 
+export const MAIN_ADMIN_USERNAME = "admin";
+
+export function isMainAdminUsername(
+  username: string | null | undefined,
+): boolean {
+  return username?.trim().toLowerCase() === MAIN_ADMIN_USERNAME;
+}
+
 export type AdminUser = {
   id: string;
   username: string;
@@ -11,13 +19,21 @@ export type AdminUser = {
   createdAt: string | null;
 };
 
-export function normalizeRole(value: unknown): UserRole {
+export function normalizeRole(
+  value: unknown,
+  username?: string | null,
+): UserRole {
+  if (isMainAdminUsername(username)) return "owner";
   return value === "owner" ? "owner" : "admin";
 }
 
-export async function findUserByUsername(username: string) {
+export async function listUsernames(): Promise<string[]> {
   const col = await users();
-  return col.findOne({ username });
+  const docs = await col
+    .find({}, { projection: { username: 1 } })
+    .sort({ username: 1 })
+    .toArray();
+  return docs.map((doc) => doc.username);
 }
 
 export async function listAdmins(): Promise<AdminUser[]> {
@@ -41,6 +57,9 @@ export async function createAdmin(input: {
   if (username.length < 3) throw new Error("Uživatelské jméno musí mít aspoň 3 znaky");
   if (!/^[a-zA-Z0-9._-]+$/.test(username)) {
     throw new Error("Uživatelské jméno smí obsahovat jen písmena, čísla, . _ -");
+  }
+  if (isMainAdminUsername(username)) {
+    throw new Error("Uživatelské jméno „admin“ je vyhrazené pro hlavního admina");
   }
   if (password.length < 8) throw new Error("Heslo musí mít aspoň 8 znaků");
 
@@ -82,7 +101,7 @@ export async function updateAdminPassword(
   const col = await users();
   const user = await col.findOne({ _id: objectId });
   if (!user) throw new Error("Uživatel nenalezen");
-  if (normalizeRole(user.role) === "owner") {
+  if (normalizeRole(user.role, user.username) === "owner") {
     throw new Error("Heslo hlavního admina nelze měnit zde");
   }
 
@@ -104,7 +123,7 @@ export async function deleteAdmin(id: string, actorUsername: string): Promise<vo
   const col = await users();
   const user = await col.findOne({ _id: objectId });
   if (!user) throw new Error("Uživatel nenalezen");
-  if (normalizeRole(user.role) === "owner") {
+  if (normalizeRole(user.role, user.username) === "owner") {
     throw new Error("Hlavního admina nelze smazat");
   }
   if (user.username === actorUsername) {
@@ -118,7 +137,7 @@ function toAdminUser(doc: UserDoc): AdminUser {
   return {
     id: doc._id.toString(),
     username: doc.username,
-    role: normalizeRole(doc.role),
+    role: normalizeRole(doc.role, doc.username),
     createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : null,
   };
 }

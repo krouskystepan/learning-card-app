@@ -4,7 +4,7 @@ import { createTopic, parseFlashcards } from "@/lib/topics";
 
 export async function POST(request: Request) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const body = (await request.json()) as {
       sectionSlug?: string;
       title?: string;
@@ -23,11 +23,12 @@ export async function POST(request: Request) {
       sectionSlug: body.sectionSlug,
       title: body.title,
       flashcards,
+      createdBy: session.username,
     });
     return NextResponse.json(topic, { status: 201 });
   } catch (err) {
     if (err instanceof AuthError) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: err.message }, { status: err.status });
     }
     const message = err instanceof Error ? err.message : "Chyba serveru";
     return NextResponse.json({ error: message }, { status: 400 });

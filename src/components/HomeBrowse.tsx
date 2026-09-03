@@ -4,6 +4,7 @@ import { useDeferredValue, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { BookOpen, Search, X } from 'lucide-react'
 import type { Section } from '@/lib/topics'
+import { canDeleteContent, canManageContent, canManageEditors, sectionCollaborators, type ContentActor } from '@/lib/permissions'
 import { sectionColorVars } from '@/lib/section-style'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,9 +35,10 @@ function normalize(value: string) {
 type Props = {
   sections: Section[]
   isEditor: boolean
+  viewer: ContentActor | null
 }
 
-export function HomeBrowse({ sections, isEditor }: Props) {
+export function HomeBrowse({ sections, isEditor, viewer }: Props) {
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
   const needle = normalize(deferredQuery)
@@ -68,7 +70,9 @@ export function HomeBrowse({ sections, isEditor }: Props) {
             </h1>
             <p className="mt-2 max-w-xl text-base text-muted-foreground sm:mt-3 sm:text-lg">
               {isEditor
-                ? 'Jsi přihlášený - můžeš vytvářet, upravovat a mazat sekce i témata.'
+                ? viewer?.role === 'owner'
+                  ? 'Jsi hlavní admin - můžeš spravovat vše a přidávat editory ke sekcím.'
+                  : 'Můžeš vytvářet obsah, spravovat to své a u svých sekcí přidávat další editory.'
                 : 'Vyber téma a začni se učit.'}
             </p>
           </div>
@@ -116,12 +120,18 @@ export function HomeBrowse({ sections, isEditor }: Props) {
                   <h2 className="font-card text-xl font-semibold tracking-tight sm:text-2xl">
                     {section.name}
                   </h2>
-                  {isEditor && (
+                  {canManageContent(
+                    viewer,
+                    section.createdBy,
+                    section.editors
+                  ) && (
                     <SectionActions
                       slug={section.slug}
                       name={section.name}
                       icon={section.icon}
                       color={section.color}
+                      canShare={canManageEditors(viewer, section.createdBy)}
+                      canDelete={canDeleteContent(viewer, section.createdBy)}
                     />
                   )}
                 </div>
@@ -173,11 +183,21 @@ export function HomeBrowse({ sections, isEditor }: Props) {
                       <p className="ml-auto text-xs text-muted-foreground tabular-nums sm:text-sm">
                         {topic.cardCount} {cardLabel(topic.cardCount)}
                       </p>
-                      {isEditor && (
+                      {(canManageContent(
+                        viewer,
+                        topic.createdBy,
+                        sectionCollaborators(section)
+                      ) ||
+                        canDeleteContent(viewer, topic.createdBy) ||
+                        canDeleteContent(viewer, section.createdBy)) && (
                         <TopicActions
                           sectionSlug={section.slug}
                           topicSlug={topic.slug}
                           title={topic.title}
+                          canDelete={
+                            canDeleteContent(viewer, topic.createdBy) ||
+                            canDeleteContent(viewer, section.createdBy)
+                          }
                         />
                       )}
                     </div>
