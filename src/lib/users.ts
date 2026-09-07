@@ -36,6 +36,15 @@ export async function listUsernames(): Promise<string[]> {
   return docs.map((doc) => doc.username);
 }
 
+/** Owners first, then username (cs). */
+export function compareAdmins(a: AdminUser, b: AdminUser): number {
+  if (a.role !== b.role) {
+    if (a.role === "owner") return -1;
+    if (b.role === "owner") return 1;
+  }
+  return a.username.localeCompare(b.username, "cs");
+}
+
 export async function listAdmins(): Promise<AdminUser[]> {
   const col = await users();
   const docs = await col
@@ -43,7 +52,7 @@ export async function listAdmins(): Promise<AdminUser[]> {
     .sort({ username: 1 })
     .toArray();
 
-  return docs.map((doc) => toAdminUser(doc));
+  return docs.map((doc) => toAdminUser(doc)).sort(compareAdmins);
 }
 
 export async function createAdmin(input: {
@@ -101,9 +110,6 @@ export async function updateAdminPassword(
   const col = await users();
   const user = await col.findOne({ _id: objectId });
   if (!user) throw new Error("Uživatel nenalezen");
-  if (normalizeRole(user.role, user.username) === "owner") {
-    throw new Error("Heslo hlavního admina nelze měnit zde");
-  }
 
   const passwordHash = await bcrypt.hash(password, 12);
   await col.updateOne(

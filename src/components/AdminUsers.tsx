@@ -1,20 +1,26 @@
-"use client";
+'use client'
 
-import { FormEvent, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, KeyRound, Shield, Trash2, UserPlus } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/PasswordInput";
+import { FormEvent, useState } from 'react'
+import Link from 'next/link'
+import {
+  ArrowLeft,
+  KeyRound,
+  Shield,
+  Trash2,
+  UserPlus
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { AdminPasswordField } from '@/components/AdminPasswordField'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle
+} from '@/components/ui/card'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,128 +30,202 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import type { AdminUser } from "@/lib/users";
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog'
+import type { AdminUser } from '@/lib/users'
+
+function compareAdmins(a: AdminUser, b: AdminUser): number {
+  if (a.role !== b.role) {
+    if (a.role === 'owner') return -1
+    if (b.role === 'owner') return 1
+  }
+  return a.username.localeCompare(b.username, 'cs')
+}
 
 type Props = {
-  initialAdmins: AdminUser[];
-};
+  initialAdmins: AdminUser[]
+}
+
+function ResetPasswordDialog({ admin }: { admin: AdminUser }) {
+  const [open, setOpen] = useState(false)
+  const [password, setPassword] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next)
+    if (!next) setPassword('')
+  }
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault()
+    if (password.length < 8) {
+      toast.error('Heslo musí mít aspoň 8 znaků')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/admins/${admin.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      })
+      const data = (await res.json()) as { error?: string }
+      if (!res.ok) {
+        toast.error(data.error || 'Změna hesla selhala')
+        return
+      }
+      toast.success(`Heslo pro „${admin.username}“ změněno`)
+      handleOpenChange(false)
+    } catch {
+      toast.error('Síťová chyba')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button type="button" variant="outline" size="sm">
+          <KeyRound data-icon="inline-start" />
+          Heslo
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <form onSubmit={onSubmit}>
+          <DialogHeader>
+            <DialogTitle>Nové heslo pro „{admin.username}“</DialogTitle>
+            <DialogDescription>
+              Zadej vlastní heslo, nebo si nech vygenerovat zapamatovatelné.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <AdminPasswordField
+              id={`reset-password-${admin.id}`}
+              value={password}
+              onChange={setPassword}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+            >
+              Zrušit
+            </Button>
+            <Button type="submit" disabled={saving || password.length < 8}>
+              {saving ? 'Ukládám…' : 'Uložit heslo'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 export function AdminUsersPanel({ initialAdmins }: Props) {
-  const [admins, setAdmins] = useState(initialAdmins);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [creating, setCreating] = useState(false);
+  const [admins, setAdmins] = useState(initialAdmins)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [creating, setCreating] = useState(false)
 
   async function refreshAdmins() {
     try {
-      const res = await fetch("/api/admins");
+      const res = await fetch('/api/admins')
       const data = (await res.json()) as {
-        admins?: AdminUser[];
-        error?: string;
-      };
-      if (!res.ok) {
-        toast.error(data.error || "Nepodařilo se načíst adminy");
-        return;
+        admins?: AdminUser[]
+        error?: string
       }
-      setAdmins(data.admins ?? []);
+      if (!res.ok) {
+        toast.error(data.error || 'Nepodařilo se načíst adminy')
+        return
+      }
+      setAdmins(data.admins ?? [])
     } catch {
-      toast.error("Síťová chyba");
+      toast.error('Síťová chyba')
     }
   }
 
   async function onCreate(e: FormEvent) {
-    e.preventDefault();
-    setCreating(true);
-    try {
-      const res = await fetch("/api/admins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-      const data = (await res.json()) as {
-        admin?: AdminUser;
-        error?: string;
-      };
-      if (!res.ok) {
-        toast.error(data.error || "Vytvoření selhalo");
-        return;
-      }
-      toast.success(`Admin „${username.trim()}“ vytvořen`);
-      setUsername("");
-      setPassword("");
-      if (data.admin) {
-        setAdmins((prev) =>
-          [...prev, data.admin!].sort((a, b) =>
-            a.username.localeCompare(b.username, "cs"),
-          ),
-        );
-      } else {
-        await refreshAdmins();
-      }
-    } catch {
-      toast.error("Síťová chyba");
-    } finally {
-      setCreating(false);
+    e.preventDefault()
+    if (password.length < 8) {
+      toast.error('Heslo musí mít aspoň 8 znaků')
+      return
     }
-  }
-
-  async function onResetPassword(id: string, name: string) {
-    const next = window.prompt(`Nové heslo pro „${name}“ (min. 8 znaků):`);
-    if (next == null) return;
+    setCreating(true)
     try {
-      const res = await fetch(`/api/admins/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: next }),
-      });
-      const data = (await res.json()) as { error?: string };
-      if (!res.ok) {
-        toast.error(data.error || "Změna hesla selhala");
-        return;
+      const res = await fetch('/api/admins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      const data = (await res.json()) as {
+        admin?: AdminUser
+        error?: string
       }
-      toast.success(`Heslo pro „${name}“ změněno`);
+      if (!res.ok) {
+        toast.error(data.error || 'Vytvoření selhalo')
+        return
+      }
+      toast.success(`Admin „${username.trim()}“ vytvořen`)
+      setUsername('')
+      setPassword('')
+      if (data.admin) {
+        setAdmins((prev) => [...prev, data.admin!].sort(compareAdmins))
+      } else {
+        await refreshAdmins()
+      }
     } catch {
-      toast.error("Síťová chyba");
+      toast.error('Síťová chyba')
+    } finally {
+      setCreating(false)
     }
   }
 
   async function onDelete(id: string, name: string) {
     try {
-      const res = await fetch(`/api/admins/${id}`, { method: "DELETE" });
-      const data = (await res.json()) as { error?: string };
+      const res = await fetch(`/api/admins/${id}`, { method: 'DELETE' })
+      const data = (await res.json()) as { error?: string }
       if (!res.ok) {
-        toast.error(data.error || "Smazání selhalo");
-        return;
+        toast.error(data.error || 'Smazání selhalo')
+        return
       }
-      toast.success(`Admin „${name}“ smazán`);
-      setAdmins((prev) => prev.filter((a) => a.id !== id));
+      toast.success(`Admin „${name}“ smazán`)
+      setAdmins((prev) => prev.filter((a) => a.id !== id))
     } catch {
-      toast.error("Síťová chyba");
+      toast.error('Síťová chyba')
     }
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
-      <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
-        <Link href="/">
-          <ArrowLeft data-icon="inline-start" />
-          Zpět na okruhy
-        </Link>
-      </Button>
-
+    <div className="mx-auto w-full max-w-xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
       <header className="mb-8">
+        <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
+          <Link href="/">
+            <ArrowLeft data-icon="inline-start" />
+            Zpět na okruhy
+          </Link>
+        </Button>
         <h1 className="font-card text-3xl font-semibold tracking-tight">
           Správa adminů
         </h1>
-        <p className="mt-2 max-w-xl text-muted-foreground">
-          Noví admini mohou vytvářet obsah a upravovat nebo mazat jen to, co sami
-          vytvořili. Hlavní admin může spravovat vše.
+        <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+          Noví admini mohou vytvářet obsah a upravovat nebo mazat jen to, co
+          sami vytvořili. Hlavní admin může spravovat vše.
         </p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -170,35 +250,32 @@ export function AdminUsersPanel({ initialAdmins }: Props) {
                   minLength={3}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="admin-password">Heslo</Label>
-                <PasswordInput
-                  id="admin-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  placeholder="min. 8 znaků"
-                  required
-                  minLength={8}
-                />
-              </div>
-              <Button type="submit" disabled={creating} className="w-full">
-                {creating ? "Vytvářím…" : "Přidat admina"}
+              <AdminPasswordField
+                id="admin-password"
+                value={password}
+                onChange={setPassword}
+              />
+              <Button
+                type="submit"
+                disabled={creating || password.length < 8}
+                className="w-full"
+              >
+                {creating ? 'Vytvářím…' : 'Přidat admina'}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex-row items-baseline justify-between gap-3 space-y-0">
             <CardTitle className="text-lg">Existující admini</CardTitle>
-            <CardDescription>
-              {admins.length}{" "}
+            <CardDescription className="shrink-0">
+              {admins.length}{' '}
               {admins.length === 1
-                ? "účet"
+                ? 'účet'
                 : admins.length < 5
-                  ? "účty"
-                  : "účtů"}
+                  ? 'účty'
+                  : 'účtů'}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -211,46 +288,34 @@ export function AdminUsersPanel({ initialAdmins }: Props) {
                 {admins.map((admin) => (
                   <li
                     key={admin.id}
-                    className="flex items-center justify-between gap-3 px-6 py-4"
+                    className="flex items-center gap-3 px-4 py-3 sm:px-6"
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        {admin.role === "owner" ? (
-                          <Shield className="size-4 text-primary" />
-                        ) : (
-                          <span className="text-sm font-semibold uppercase">
-                            {admin.username.slice(0, 1)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate font-medium">{admin.username}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {admin.role === "owner"
-                            ? "Hlavní admin"
-                            : "Admin — bez správy účtů"}
-                        </p>
-                      </div>
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      {admin.role === 'owner' ? (
+                        <Shield className="size-4 text-primary" />
+                      ) : (
+                        <span className="text-sm font-semibold uppercase">
+                          {admin.username.slice(0, 1)}
+                        </span>
+                      )}
                     </div>
-                    {admin.role !== "owner" && (
-                      <div className="flex shrink-0 items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            onResetPassword(admin.id, admin.username)
-                          }
-                        >
-                          <KeyRound data-icon="inline-start" />
-                          Heslo
-                        </Button>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{admin.username}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {admin.role === 'owner'
+                          ? 'Hlavní admin'
+                          : 'Bez správy účtů'}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <ResetPasswordDialog admin={admin} />
+                      {admin.role !== 'owner' ? (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
                               type="button"
-                              variant="ghost"
-                              size="icon-sm"
+                              variant="outline"
+                              size="sm"
                               aria-label={`Smazat ${admin.username}`}
                             >
                               <Trash2 className="text-destructive" />
@@ -278,8 +343,8 @@ export function AdminUsersPanel({ initialAdmins }: Props) {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </div>
-                    )}
+                      ) : null}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -288,5 +353,5 @@ export function AdminUsersPanel({ initialAdmins }: Props) {
         </Card>
       </div>
     </div>
-  );
+  )
 }

@@ -5,6 +5,7 @@ import type { Flashcard } from "@/lib/topics";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { FitText } from "@/components/FitText";
 
 type Props = {
   card: Flashcard;
@@ -34,37 +35,37 @@ export function FlipMode({ card, cardNumber, onPrev, onNext }: Props) {
   }, [onPrev, onNext]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       <button
         type="button"
         onClick={() => setFlipped((f) => !f)}
-        className="flip-scene w-full text-left"
+        className="flip-scene w-full text-left outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:ring-0 focus-visible:outline-none"
         aria-label={flipped ? "Zobrazit otázku" : "Zobrazit odpověď"}
       >
         <div
-          className={`flip-card relative h-75 w-full sm:h-85 ${
+          className={`flip-card relative h-80 w-full sm:h-100 ${
             flipped ? "is-flipped" : ""
           }`}
         >
-          <Card className="section-card flip-face absolute inset-0 flex flex-col justify-between gap-0 p-8 shadow-lg ring-0">
-            <Badge className="w-fit border-transparent bg-primary/15 text-primary">
+          <Card className="section-card flip-face absolute inset-0 flex flex-col gap-0 px-5 py-6 shadow-lg ring-0 sm:px-8 sm:py-8">
+            <Badge className="w-fit shrink-0 border-transparent bg-primary/15 text-primary">
               Otázka {cardNumber}
             </Badge>
-            <p className="font-card text-2xl leading-snug font-medium sm:text-3xl">
+            <FitText maxPx={30} className="leading-snug">
               {card.question}
-            </p>
-            <span className="text-sm text-muted-foreground">
+            </FitText>
+            <span className="shrink-0 text-xs text-muted-foreground sm:text-sm">
               Klikni nebo stiskni mezerník pro překlopení
             </span>
           </Card>
-          <Card className="section-card-answer flip-face flip-face-back absolute inset-0 flex flex-col justify-between gap-0 p-8 shadow-lg ring-0">
-            <Badge className="w-fit border-transparent bg-primary text-primary-foreground">
+          <Card className="section-card-answer flip-face flip-face-back absolute inset-0 flex flex-col gap-0 px-5 py-6 shadow-lg ring-0 sm:px-8 sm:py-8">
+            <Badge className="w-fit shrink-0 border-transparent bg-primary text-primary-foreground">
               Odpověď {cardNumber}
             </Badge>
-            <p className="font-card text-xl leading-relaxed font-medium sm:text-2xl">
+            <FitText maxPx={24} className="leading-relaxed">
               {card.answer}
-            </p>
-            <span className="text-sm text-muted-foreground">
+            </FitText>
+            <span className="shrink-0 text-xs text-muted-foreground sm:text-sm">
               Klikni nebo stiskni mezerník pro otázku
             </span>
           </Card>

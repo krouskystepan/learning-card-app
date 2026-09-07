@@ -80,9 +80,9 @@ export function CreateSectionDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus data-icon="inline-start" />
-          Nová sekce
+        <Button size="sm" className="max-sm:px-2" aria-label="Nová sekce">
+          <Plus />
+          <span className="hidden sm:inline">Nová sekce</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

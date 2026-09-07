@@ -30,19 +30,25 @@ export function AuthNav({ username }: Props) {
     if (pathname === "/login") return null;
 
     return (
-      <Button asChild variant="outline" size="sm">
+      <Button asChild variant="outline" size="sm" className="max-sm:px-2">
         <Link href="/login">
-          <LogIn data-icon="inline-start" />
-          Přihlásit
+          <LogIn />
+          <span className="hidden sm:inline">Přihlásit</span>
         </Link>
       </Button>
     );
   }
 
   return (
-    <Button variant="ghost" size="sm" onClick={logout}>
-      <LogOut data-icon="inline-start" />
-      Odhlásit se
+    <Button
+      variant="ghost"
+      size="sm"
+      className="max-sm:px-2"
+      onClick={logout}
+      aria-label="Odhlásit se"
+    >
+      <LogOut />
+      <span className="hidden sm:inline">Odhlásit se</span>
     </Button>
   );
 }

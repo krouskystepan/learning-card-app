@@ -24,11 +24,11 @@ export function TypeMode({ card, cardNumber, onPrev, onNext }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card className="section-card gap-0 p-8 shadow-lg ring-0">
+      <Card className="section-card gap-0 p-5 shadow-lg ring-0 sm:p-8">
         <Badge className="w-fit border-transparent bg-primary/15 text-primary">
           Otázka {cardNumber}
         </Badge>
-        <p className="mt-4 font-card text-2xl leading-snug font-medium sm:text-3xl">
+        <p className="mt-4 font-card text-xl leading-snug font-medium sm:text-3xl">
           {card.question}
         </p>
 

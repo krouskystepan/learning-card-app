@@ -20,7 +20,7 @@ const literata = Literata({
 })
 
 export const metadata: Metadata = {
-  title: 'Maturitní kartičky',
+  title: 'Kartičky',
   description: 'Uč se maturitní okruhy pomocí karet - online i tisk.'
 }
 

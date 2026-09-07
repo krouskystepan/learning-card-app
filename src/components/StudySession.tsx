@@ -72,10 +72,10 @@ export function StudySession({ title, flashcards, color }: Props) {
 
   return (
     <div
-      className="section-theme mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-10"
+      className="section-theme mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-10"
       style={sectionColorVars(color)}
     >
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="min-w-0">
           <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
             <Link href="/">
@@ -83,42 +83,40 @@ export function StudySession({ title, flashcards, color }: Props) {
               Zpět na okruhy
             </Link>
           </Button>
-          <h1 className="font-card text-3xl font-semibold tracking-tight">
+          <h1 className="font-card text-2xl font-semibold tracking-tight sm:text-3xl">
             {title}
           </h1>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <ToggleGroup
-            type="single"
-            value={mode}
-            onValueChange={(value) => {
-              if (value === "flip" || value === "type") {
-                setMode(value);
-                setIndex(0);
-              }
-            }}
-            variant="outline"
-            size="sm"
-            spacing={0}
+        <ToggleGroup
+          type="single"
+          value={mode}
+          onValueChange={(value) => {
+            if (value === "flip" || value === "type") {
+              setMode(value);
+              setIndex(0);
+            }
+          }}
+          variant="outline"
+          size="sm"
+          spacing={0}
+        >
+          <ToggleGroupItem
+            value="flip"
+            className="px-3 data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
           >
-            <ToggleGroupItem
-              value="flip"
-              className="px-3 data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
-            >
-              Překlopit
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="type"
-              className="px-3 data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
-            >
-              Psát odpověď
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
+            Překlopit
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="type"
+            className="px-3 data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
+          >
+            Psát odpověď
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
         <p className="text-sm text-muted-foreground">
           Kartička{" "}
           <span className="font-semibold text-foreground">{index + 1}</span> z{" "}
@@ -133,9 +131,10 @@ export function StudySession({ title, flashcards, color }: Props) {
               size="sm"
               onClick={() => applyOrderMode("random")}
               title="Znovu zamíchat"
+              className="max-sm:px-2"
             >
-              <Shuffle data-icon="inline-start" />
-              Zamíchat znovu
+              <Shuffle />
+              <span className="hidden sm:inline">Zamíchat znovu</span>
             </Button>
           )}
 
@@ -154,13 +153,13 @@ export function StudySession({ title, flashcards, color }: Props) {
           >
             <ToggleGroupItem
               value="sequential"
-              className="px-3 data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
+              className="px-2.5 data-[state=on]:bg-primary/15 data-[state=on]:text-primary sm:px-3"
             >
               Postupně
             </ToggleGroupItem>
             <ToggleGroupItem
               value="random"
-              className="px-3 data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
+              className="px-2.5 data-[state=on]:bg-primary/15 data-[state=on]:text-primary sm:px-3"
             >
               Náhodně
             </ToggleGroupItem>
