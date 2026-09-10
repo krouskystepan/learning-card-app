@@ -74,10 +74,18 @@ export function HomeBrowse({ sections, isEditor, viewer }: Props) {
 
     return scoped
       .map((section) => {
-        const sectionMatch = normalize(section.name).includes(needle)
+        const sectionMatch =
+          normalize(section.name).includes(needle) ||
+          (section.createdBy != null &&
+            normalize(section.createdBy).includes(needle))
         const topics = sectionMatch
           ? section.topics
-          : section.topics.filter((t) => normalize(t.title).includes(needle))
+          : section.topics.filter(
+              (t) =>
+                normalize(t.title).includes(needle) ||
+                (t.createdBy != null &&
+                  normalize(t.createdBy).includes(needle))
+            )
         if (!sectionMatch && topics.length === 0) return null
         return { ...section, topics }
       })
@@ -157,8 +165,8 @@ export function HomeBrowse({ sections, isEditor, viewer }: Props) {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Hledat sekci nebo téma…"
-                aria-label="Hledat sekci nebo téma"
+                placeholder="Hledat sekci, téma nebo autora…"
+                aria-label="Hledat sekci, téma nebo autora"
                 className="h-9 pr-9 pl-8"
               />
               {query && (
@@ -214,9 +222,7 @@ export function HomeBrowse({ sections, isEditor, viewer }: Props) {
                     : section.topics.length < 5
                       ? 'témata'
                       : 'témat'}
-                  {isEditor && section.createdBy
-                    ? ` · vytvořil ${section.createdBy}`
-                    : null}
+                  {section.createdBy ? ` · autor ${section.createdBy}` : null}
                   {isEditor &&
                   viewer &&
                   section.editors.includes(viewer.username) &&
@@ -254,15 +260,18 @@ export function HomeBrowse({ sections, isEditor, viewer }: Props) {
                         {topic.title}
                       </Link>
                     </h3>
-                    <div className="mt-auto flex items-center gap-2">
+                    <div className="mt-auto flex flex-wrap items-center gap-2">
                       <Button asChild size="sm">
                         <Link href={`/study/${section.slug}/${topic.slug}`}>
                           <BookOpen data-icon="inline-start" />
                           Učit se
                         </Link>
                       </Button>
-                      <p className="ml-auto text-xs text-muted-foreground tabular-nums sm:text-sm">
-                        {topic.cardCount} {cardLabel(topic.cardCount)}
+                      <p className="ml-auto text-xs text-muted-foreground sm:text-sm">
+                        <span className="tabular-nums">
+                          {topic.cardCount} {cardLabel(topic.cardCount)}
+                        </span>
+                        {topic.createdBy ? ` · autor ${topic.createdBy}` : null}
                       </p>
                       {(canManageContent(
                         viewer,
