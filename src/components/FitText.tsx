@@ -14,14 +14,9 @@ type Props = {
 
 /**
  * Shrinks font size until the text fits the parent box.
- * No scrolling — overflows are clipped only if still too long at minPx.
+ * No scrolling - overflows are clipped only if still too long at minPx.
  */
-export function FitText({
-  children,
-  className,
-  maxPx,
-  minPx = 13
-}: Props) {
+export function FitText({ children, className, maxPx, minPx = 13 }: Props) {
   const boxRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLParagraphElement>(null)
   const [size, setSize] = useState(maxPx)

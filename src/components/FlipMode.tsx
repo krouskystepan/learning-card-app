@@ -1,50 +1,33 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import type { Flashcard } from "@/lib/topics";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { FitText } from "@/components/FitText";
+import type { Flashcard } from '@/lib/topics'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import { FitText } from '@/components/FitText'
+import { useFlipCard } from '@/hooks/use-flip-card'
 
 type Props = {
-  card: Flashcard;
-  cardNumber: number;
-  onPrev: () => void;
-  onNext: () => void;
-};
+  card: Flashcard
+  cardNumber: number
+  onPrev: () => void
+  onNext: () => void
+}
 
 export function FlipMode({ card, cardNumber, onPrev, onNext }: Props) {
-  const [flipped, setFlipped] = useState(false);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === " " || e.key === "Enter") {
-        e.preventDefault();
-        setFlipped((f) => !f);
-      } else if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        onPrev();
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        onNext();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onPrev, onNext]);
+  const { flipped, toggle } = useFlipCard(onPrev, onNext)
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       <button
         type="button"
-        onClick={() => setFlipped((f) => !f)}
+        onClick={toggle}
         className="flip-scene w-full text-left outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:ring-0 focus-visible:outline-none"
-        aria-label={flipped ? "Zobrazit otázku" : "Zobrazit odpověď"}
+        aria-label={flipped ? 'Zobrazit otázku' : 'Zobrazit odpověď'}
       >
         <div
           className={`flip-card relative h-80 w-full sm:h-100 ${
-            flipped ? "is-flipped" : ""
+            flipped ? 'is-flipped' : ''
           }`}
         >
           <Card className="section-card flip-face absolute inset-0 flex flex-col gap-0 px-5 py-6 shadow-lg ring-0 sm:px-8 sm:py-8">
@@ -81,5 +64,5 @@ export function FlipMode({ card, cardNumber, onPrev, onNext }: Props) {
         </Button>
       </div>
     </div>
-  );
+  )
 }

@@ -1,73 +1,30 @@
-"use client";
+'use client'
 
-import { useCallback, useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Shuffle } from "lucide-react";
-import type { Flashcard } from "@/lib/topics";
-import {
-  sectionColorVars,
-  type SectionColorId,
-} from "@/lib/section-style";
-import { FlipMode } from "@/components/FlipMode";
-import { TypeMode } from "@/components/TypeMode";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-type Mode = "flip" | "type";
-type OrderMode = "sequential" | "random";
-
-function shuffle<T>(items: T[]): T[] {
-  const next = [...items];
-  for (let i = next.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [next[i], next[j]] = [next[j], next[i]];
-  }
-  return next;
-}
+import Link from 'next/link'
+import { ArrowLeft, Shuffle } from 'lucide-react'
+import type { Flashcard } from '@/lib/topics'
+import { sectionColorVars, type SectionColorId } from '@/lib/section-style'
+import { FlipMode } from '@/components/FlipMode'
+import { TypeMode } from '@/components/TypeMode'
+import { TypeResults } from '@/components/TypeResults'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { useStudySession } from '@/hooks/use-study-session'
 
 type Props = {
-  title: string;
-  flashcards: Flashcard[];
-  color: SectionColorId;
-};
+  title: string
+  flashcards: Flashcard[]
+  color: SectionColorId
+}
 
 export function StudySession({ title, flashcards, color }: Props) {
-  const [mode, setMode] = useState<Mode>("flip");
-  const [orderMode, setOrderMode] = useState<OrderMode>("sequential");
-  const [order, setOrder] = useState(() => flashcards.map((_, i) => i));
-  const [index, setIndex] = useState(0);
+  const session = useStudySession(flashcards)
 
-  const cards = useMemo(
-    () => order.map((i) => flashcards[i]),
-    [flashcards, order],
-  );
-
-  const current = cards[index];
-  const total = cards.length;
-
-  const goPrev = useCallback(() => {
-    setIndex((i) => (i > 0 ? i - 1 : total - 1));
-  }, [total]);
-
-  const goNext = useCallback(() => {
-    setIndex((i) => (i < total - 1 ? i + 1 : 0));
-  }, [total]);
-
-  const applyOrderMode = (next: OrderMode) => {
-    setOrderMode(next);
-    setIndex(0);
-    if (next === "sequential") {
-      setOrder(flashcards.map((_, i) => i));
-      return;
-    }
-    setOrder(shuffle(flashcards.map((_, i) => i)));
-  };
-
-  if (!current) {
+  if (!session.current) {
     return (
       <p className="p-8 text-muted-foreground">Toto téma nemá žádné kartičky.</p>
-    );
+    )
   }
 
   return (
@@ -90,12 +47,9 @@ export function StudySession({ title, flashcards, color }: Props) {
 
         <ToggleGroup
           type="single"
-          value={mode}
+          value={session.mode}
           onValueChange={(value) => {
-            if (value === "flip" || value === "type") {
-              setMode(value);
-              setIndex(0);
-            }
+            if (value === 'flip' || value === 'type') session.setMode(value)
           }}
           variant="outline"
           size="sm"
@@ -118,18 +72,26 @@ export function StudySession({ title, flashcards, color }: Props) {
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
         <p className="text-sm text-muted-foreground">
-          Kartička{" "}
-          <span className="font-semibold text-foreground">{index + 1}</span> z{" "}
-          {total}
+          {session.mode === 'type' && session.showResults ? (
+            'Hotovo'
+          ) : (
+            <>
+              Kartička{' '}
+              <span className="font-semibold text-foreground">
+                {session.index + 1}
+              </span>{' '}
+              z {session.total}
+            </>
+          )}
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
-          {orderMode === "random" && (
+          {session.orderMode === 'random' && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => applyOrderMode("random")}
+              onClick={session.reshuffle}
               title="Znovu zamíchat"
               className="max-sm:px-2"
             >
@@ -140,10 +102,10 @@ export function StudySession({ title, flashcards, color }: Props) {
 
           <ToggleGroup
             type="single"
-            value={orderMode}
+            value={session.orderMode}
             onValueChange={(value) => {
-              if (value === "sequential" || value === "random") {
-                applyOrderMode(value);
+              if (value === 'sequential' || value === 'random') {
+                session.setOrderMode(value)
               }
             }}
             variant="outline"
@@ -167,27 +129,35 @@ export function StudySession({ title, flashcards, color }: Props) {
         </div>
       </div>
 
-      <Progress value={((index + 1) / total) * 100} className="mb-8 h-1.5" />
+      <Progress value={session.progress} className="mb-8 h-1.5" />
 
       <div className="flex-1">
-        {mode === "flip" ? (
+        {session.mode === 'flip' ? (
           <FlipMode
-            key={`${mode}-${order.join("-")}-${index}`}
-            card={current}
-            cardNumber={order[index] + 1}
-            onPrev={goPrev}
-            onNext={goNext}
+            key={session.cardKey}
+            card={session.current}
+            cardNumber={session.cardNumber}
+            onPrev={session.goPrev}
+            onNext={session.goNext}
+          />
+        ) : session.showResults ? (
+          <TypeResults
+            total={session.total}
+            grades={session.grades}
+            onRetry={session.retry}
           />
         ) : (
           <TypeMode
-            key={`${mode}-${order.join("-")}-${index}`}
-            card={current}
-            cardNumber={order[index] + 1}
-            onPrev={goPrev}
-            onNext={goNext}
+            key={session.cardKey}
+            card={session.current}
+            cardNumber={session.cardNumber}
+            onPrev={session.goPrev}
+            onNext={session.goNext}
+            onKnow={session.gradeKnow}
+            onMiss={session.gradeMiss}
           />
         )}
       </div>
     </div>
-  );
+  )
 }
