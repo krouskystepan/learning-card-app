@@ -58,17 +58,28 @@ type Props = {
 function ResetPasswordDialog({ admin }: { admin: AdminUser }) {
   const [open, setOpen] = useState(false)
   const [password, setPassword] = useState('')
+  const [confirmUsername, setConfirmUsername] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const usernameMatches = confirmUsername === admin.username
+  const canSubmit = password.length >= 8 && usernameMatches
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
-    if (!next) setPassword('')
+    if (!next) {
+      setPassword('')
+      setConfirmUsername('')
+    }
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     if (password.length < 8) {
       toast.error('Heslo musí mít aspoň 8 znaků')
+      return
+    }
+    if (!usernameMatches) {
+      toast.error('Pro potvrzení zadej přesné jméno účtu')
       return
     }
     setSaving(true)
@@ -106,14 +117,30 @@ function ResetPasswordDialog({ admin }: { admin: AdminUser }) {
             <DialogTitle>Nové heslo pro „{admin.username}“</DialogTitle>
             <DialogDescription>
               Zadej vlastní heslo, nebo si nech vygenerovat zapamatovatelné.
+              Pro potvrzení přepiš jméno účtu.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
+          <div className="space-y-4 py-4">
             <AdminPasswordField
               id={`reset-password-${admin.id}`}
               value={password}
               onChange={setPassword}
             />
+            <div className="space-y-2">
+              <Label htmlFor={`confirm-username-${admin.id}`}>
+                Pro potvrzení napiš „{admin.username}“
+              </Label>
+              <Input
+                id={`confirm-username-${admin.id}`}
+                value={confirmUsername}
+                onChange={(e) => setConfirmUsername(e.target.value)}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                placeholder={admin.username}
+                required
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -123,7 +150,7 @@ function ResetPasswordDialog({ admin }: { admin: AdminUser }) {
             >
               Zrušit
             </Button>
-            <Button type="submit" disabled={saving || password.length < 8}>
+            <Button type="submit" disabled={saving || !canSubmit}>
               {saving ? 'Ukládám…' : 'Uložit heslo'}
             </Button>
           </DialogFooter>

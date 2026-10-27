@@ -22,7 +22,7 @@ export function PasswordInput({ className, ...props }: Props) {
         type="button"
         variant="ghost"
         size="icon-sm"
-        className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        className="absolute inset-y-0 right-0.5 my-auto text-muted-foreground hover:bg-transparent hover:text-foreground active:translate-y-0"
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? "Skrýt heslo" : "Zobrazit heslo"}
         tabIndex={-1}
